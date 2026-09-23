@@ -1,9 +1,9 @@
 # Computational Reproduction and Audit: Transportation Walking and Insecurity (NHIS 2022)
 
 **Author**: James Pusateri  
-**Affiliation**: Middle Coast Software Inc.  
-**Contact**: james.pusateri@middlecoastsoftware.com  
+**Affiliation**: Middle Coast Software Inc. / Applied Inference Lab  
 **Target Study**: Soto G, Van Dyke ME, Nakayama JY, Chen TJ, Devlin HM, Irani K, Matjasko JL, Zaganjor H, Whitfield GP. Transportation Walking Among US Adults With and Without Transportation Insecurity, 2022 National Health Interview Survey. *Preventing Chronic Disease* 2026;23:250436. DOI: 10.5888/pcd23.250436.
+
 
 ---
 
@@ -54,15 +54,11 @@ Beyond verifying numerical accuracy, this audit identifies critical structural n
 .
 ├── 25_0436.pdf                     # Target publication PDF
 ├── README.md                       # Quickstart and overview
-├── deliverables/                   # Manuscripts and audit deliverables
-│   ├── draft_article.md            # Formal academic reproduction manuscript
-│   ├── substack_article.md         # Accessible, business-oriented analytical critique
-│   └── REPRODUCIBILITY_AUDIT_2026-09-23.md # Formal dated audit checklist
 ├── data/
-
 │   ├── raw/                        # CDC raw data (adult22.csv, adult22csv.zip, codebooks)
 │   ├── benchmarks/                 # Published Table 1 & Table 2 reference CSVs
 │   └── processed/                  # Harmonized analytic data & audit discrepancies
+
 ├── documentation/
 │   ├── 01_dataset_acquisition_and_audit.md
 │   ├── 02_data_cleaning_and_harmonization.md

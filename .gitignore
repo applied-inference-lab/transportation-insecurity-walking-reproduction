@@ -39,3 +39,7 @@ scratch/
 # All other root-level markdown files are excluded unless explicitly opted into.
 /*.md
 !/README.md
+
+# Unpublished draft manuscripts & reports
+deliverables/
+
