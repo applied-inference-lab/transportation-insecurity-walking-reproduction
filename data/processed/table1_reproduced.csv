@@ -1,0 +1,34 @@
+domain,category,overall_n,overall_pct,ti_n,ti_pct,ti_ci_low,ti_ci_high,tw_n,tw_pct,tw_ci_low,tw_ci_high
+Overall,Overall,25913,100.0,1449,5.6,5.1,6.2,4081,16.1,15.4,16.9
+Sex,Female,14108,51.3,834,6.0,5.4,6.6,2043,15.0,14.2,16.0
+Sex,Male,11805,48.7,615,5.3,4.6,6.0,2038,17.3,16.3,18.3
+Age,18-24,1637,11.6,145,8.5,7.1,10.1,473,27.7,25.4,30.2
+Age,25-34,3754,17.2,230,6.0,5.0,7.1,833,20.7,19.1,22.5
+Age,35-44,4005,16.8,227,5.7,4.9,6.7,687,16.3,14.9,17.7
+Age,45-64,8278,32.4,463,5.3,4.6,6.0,1199,13.3,12.4,14.3
+Age,>=65,8239,22.1,384,4.3,3.8,4.9,889,10.5,9.6,11.5
+Race/Ethnicity,Non-Hispanic AIAN,347,1.4,47,14.1,9.0,21.4,62,19.5,14.6,25.6
+Race/Ethnicity,Non-Hispanic Asian,1559,6.0,57,3.2,2.4,4.4,335,21.4,18.9,24.2
+Race/Ethnicity,Non-Hispanic Black,2773,11.3,256,9.1,7.9,10.4,501,18.6,16.5,20.9
+Race/Ethnicity,Hispanic or Latino/a,3644,17.0,246,6.9,5.9,8.0,610,16.5,15.0,18.1
+Race/Ethnicity,Non-Hispanic White,17288,62.9,831,4.7,4.1,5.4,2495,14.8,13.9,15.7
+Race/Ethnicity,Non-Hispanic Other/Multiple,302,1.4,12,6.3,3.3,11.4,78,25.9,20.6,32.0
+Education,Less than high school,2154,10.5,220,9.6,8.2,11.3,353,16.6,14.8,18.7
+Education,High school or GED,6496,26.9,385,6.1,5.3,6.9,781,13.2,12.1,14.4
+Education,Some college or associate degree,7317,29.6,449,6.0,5.3,6.7,987,14.8,13.7,15.9
+Education,Bachelor degree or higher,9946,33.0,395,3.7,3.1,4.5,1960,19.6,18.4,20.9
+Disability,With disabilities,2417,8.4,346,14.5,12.6,16.5,260,12.0,10.4,13.9
+Disability,Without disabilities,23496,91.6,1103,4.8,4.3,5.4,3821,16.5,15.7,17.3
+Region,Northeast,4229,17.3,226,4.9,4.1,5.9,979,25.1,22.7,27.8
+Region,Midwest,5710,20.9,330,6.4,4.9,8.3,888,16.4,14.8,18.2
+Region,South,9483,37.9,523,5.5,4.9,6.2,989,10.4,9.4,11.5
+Region,West,6491,23.9,370,5.8,4.9,6.8,1225,18.5,17.0,20.2
+Urban-Rural,Large central metropolitan,7697,30.7,426,5.7,5.1,6.5,1874,23.7,22.1,25.5
+Urban-Rural,Large fringe metropolitan,6048,25.2,268,4.7,4.1,5.4,821,14.2,13.0,15.5
+Urban-Rural,Medium and small metropolitan,8095,30.2,517,6.0,5.0,7.3,1000,13.0,11.9,14.1
+Urban-Rural,Nonmetropolitan,4073,13.9,238,6.2,4.9,7.6,386,9.7,8.4,11.3
+Income-Poverty Ratio,<1.00,2511,9.3,394,15.6,13.7,17.6,566,24.0,21.8,26.3
+Income-Poverty Ratio,1.00-1.99,4474,17.6,394,9.2,8.2,10.3,665,16.3,14.8,17.9
+Income-Poverty Ratio,2.00-2.99,4021,16.1,198,5.0,4.2,6.0,522,13.2,11.9,14.6
+Income-Poverty Ratio,3.00-3.99,3436,12.9,134,3.8,3.0,4.8,419,12.2,10.8,13.7
+Income-Poverty Ratio,>=4.00,11471,44.1,329,2.9,2.3,3.5,1909,16.6,15.6,17.7

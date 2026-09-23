@@ -1,0 +1,8 @@
+comparison_type,group1,group2,p1_pct,p2_pct,diff_pct,se_diff_pct,t_statistic,raw_p_value,bonferroni_p_value,significant_05
+TI vs Non-TI Overall,Transportation Insecure,Transportation Secure,30.92,15.27,15.65,1.62,9.679,0.0,0.0,True
+Within TI: Education,Less than high school,Bachelor degree or higher,38.94,26.36,12.58,4.46,2.82,0.004799474620228672,0.028796847721372032,True
+Within TI: Poverty Ratio,<1.00 Poverty Threshold,>=4.00 Poverty Threshold,39.82,21.74,18.08,3.97,4.556,5.208647286591983e-06,5.208647286591983e-05,True
+Within TI: Race/Ethnicity,Non-Hispanic Black,Non-Hispanic White,42.81,24.46,18.35,4.06,4.518,6.236140906556997e-06,1.8708422719670992e-05,True
+Within TI: Age,18-24 years,>=65 years,47.93,17.67,30.26,4.98,6.073,1.2533989401930512e-09,1.2533989401930512e-08,True
+Within TI: Disability,Without disabilities,With disabilities,32.46,25.25,7.21,3.54,2.039,0.041497890539807125,0.041497890539807125,True
+Within TI: Region,West,South,39.73,23.51,16.22,3.75,4.328,1.501453103291972e-05,9.008718619751832e-05,True

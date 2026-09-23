@@ -1,0 +1,11 @@
+metric,count,pct_of_total
+Total Civilian Noninstitutionalized Adult Population,238327047,100.0
+Transportation Insecure Population,13428583,5.63
+Transportation Secure Population,224898464,94.37
+Total Transportation Walkers in US,38482265,16.15
+Transportation Walkers who are Transportation Insecure,4151462,1.74
+Transportation Walkers who are Transportation Secure,34330803,14.4
+Share of All Walkers who are Transportation Insecure,4151462,10.79
+Share of All Walkers who are Transportation Secure,34330803,89.21
+Counterfactual A: Walker reduction if TI given vehicles/transit,-2101585,-5.46
+Counterfactual B: Walker gain from +2% walking in secure population,4497969,11.69

@@ -1,0 +1,6 @@
+stage,remaining_n,excluded_n
+Total 2022 NHIS Sample Adults,27651,0
+Cannot walk at all or climb steps (DIFF_A == 4),27346,305
+Missing transportation insecurity (TRANSPOR_A),26054,1292
+Missing walking for transportation (WLKTRAN_A),26047,7
+Missing sociodemographic/geographic variables,25913,134

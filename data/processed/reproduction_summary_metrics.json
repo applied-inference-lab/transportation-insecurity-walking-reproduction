@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "sample_size_reproduced": 25913,
+  "sample_size_published": 25889,
+  "sample_size_discrepancy": 24,
+  "sample_size_relative_error_pct": 0.093,
+  "table1_max_ti_pct_discrepancy": 0.1,
+  "table1_max_tw_pct_discrepancy": 0.1,
+  "table2_max_ti_walk_pct_discrepancy": 0.2,
+  "table2_max_nonti_walk_pct_discrepancy": 0.1,
+  "tolerance_threshold_pct": 0.5,
+  "all_benchmarks_within_tolerance": true
+}

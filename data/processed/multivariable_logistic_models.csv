@@ -1,0 +1,3 @@
+model,predictor,odds_ratio,ci_95_low,ci_95_high,p_value,aic,attenuation_pct
+Model 1: Unadjusted,Transportation Insecurity,2.484,2.211,2.79,4.8586427917755845e-53,22706.3,0.0
+Model 2: Multivariable Adjusted,Transportation Insecurity,2.386,2.103,2.708,2.1091376328575804e-41,20959.7,4.4

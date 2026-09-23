@@ -1,0 +1,28 @@
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache & build
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# IDE & Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating System files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Large raw dataset files (automatically downloaded via script/02_download_or_parse_wonder.py)
+data/raw/adult22.csv
+data/raw/adult22csv.zip
+data/raw/Adult-codebook.pdf
