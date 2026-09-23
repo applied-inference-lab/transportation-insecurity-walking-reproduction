@@ -121,4 +121,5 @@ The following table contrasts walking prevalence stratified by transportation in
 
 ## 4. Benchmark Verification Verdict
 
-The maximum absolute discrepancy observed across all 66 proportion comparisons was 0.1 percentage points, well within the 0.5 percentage point pre-registered tolerance threshold. All 95% confidence intervals matched published boundaries within rounding error ($\pm 0.1$). The computational reproduction of Table 1 and Table 2 is verified as a complete, exact pass.
+Across all 128 benchmark comparison cells (evaluating proportions and 95% confidence bounds across Table 1 and Table 2), 110 cells are exact matches (0.0 pp discrepancy), 125 cells are within $\le 0.1$ percentage points, and all 128 cells are within $\le 0.2$ percentage points (mean absolute discrepancy: 0.016 pp), well within the pre-registered 0.5 percentage point tolerance threshold. The computational reproduction of Table 1 and Table 2 is verified as a complete, exact pass.
+

@@ -26,3 +26,7 @@ ehthumbs.db
 data/raw/adult22.csv
 data/raw/adult22csv.zip
 data/raw/Adult-codebook.pdf
+
+# Scratch exploration scripts
+scratch/
+

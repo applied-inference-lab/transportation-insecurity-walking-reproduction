@@ -14,7 +14,10 @@ Outputs:
 """
 
 import os
+import sys
 import json
+import hashlib
+from datetime import datetime, timezone
 import pandas as pd
 import numpy as np
 
@@ -230,41 +233,108 @@ def run_rate_calculations():
     audit_t2["nonti_walk_pct_diff"] = (audit_t2["nonti_walk_pct_rep"] - audit_t2["nonti_walk_pct_pub"]).round(2)
     audit_t2.to_csv("data/processed/table2_benchmark_audit.csv", index=False)
     
-    # Metrics
-    max_ti_pct_diff = audit_t1["ti_pct_diff"].abs().max()
-    max_tw_pct_diff = audit_t1["tw_pct_diff"].abs().max()
-    max_t2_ti_diff = audit_t2["ti_walk_pct_diff"].abs().max()
-    max_t2_nonti_diff = audit_t2["nonti_walk_pct_diff"].abs().max()
+    # Independent Discrepancy Statistics
+    t1_diffs = audit_t1[["ti_pct_diff", "tw_pct_diff"]].stack().dropna().values
+    t2_diffs = audit_t2[["ti_walk_pct_diff", "nonti_walk_pct_diff"]].stack().dropna().values
+    all_diffs = np.concatenate([t1_diffs, t2_diffs])
+    abs_diffs = np.abs(all_diffs)
+    
+    n_comparisons = int(len(abs_diffs))
+    exact_matches = int((abs_diffs == 0.0).sum())
+    within_0_1 = int((abs_diffs <= 0.1).sum())
+    within_0_5 = int((abs_diffs <= 0.5).sum())
+    max_abs_diff = round(float(abs_diffs.max()), 4)
+    mean_abs_diff = round(float(abs_diffs.mean()), 4)
+    
+    max_ti_pct_diff = round(float(audit_t1["ti_pct_diff"].abs().max()), 4)
+    max_tw_pct_diff = round(float(audit_t1["tw_pct_diff"].abs().max()), 4)
+    max_t2_ti_diff = round(float(audit_t2["ti_walk_pct_diff"].abs().max()), 4)
+    max_t2_nonti_diff = round(float(audit_t2["nonti_walk_pct_diff"].abs().max()), 4)
     
     # Overall sample size comparison
     n_rep = int(df_t1_rep.loc[df_t1_rep["category"] == "Overall", "overall_n"].values[0])
     n_pub = int(t1_bench.loc[t1_bench["category"] == "Overall", "overall_n"].values[0])
     
+    tolerance_threshold = 0.5
+    all_benchmarks_within_tolerance = bool(max_abs_diff <= tolerance_threshold)
+    audit_status = "PASS" if all_benchmarks_within_tolerance else "FAIL"
+    
     summary_metrics = {
-        "status": "PASS",
+        "status": audit_status,
         "sample_size_reproduced": n_rep,
         "sample_size_published": n_pub,
         "sample_size_discrepancy": n_rep - n_pub,
         "sample_size_relative_error_pct": round((abs(n_rep - n_pub) / n_pub) * 100.0, 3),
-        "table1_max_ti_pct_discrepancy": float(max_ti_pct_diff),
-        "table1_max_tw_pct_discrepancy": float(max_tw_pct_diff),
-        "table2_max_ti_walk_pct_discrepancy": float(max_t2_ti_diff),
-        "table2_max_nonti_walk_pct_discrepancy": float(max_t2_nonti_diff),
-        "tolerance_threshold_pct": 0.5,
-        "all_benchmarks_within_tolerance": bool(
-            max_ti_pct_diff <= 0.5 and max_tw_pct_diff <= 0.5 and
-            max_t2_ti_diff <= 0.5 and max_t2_nonti_diff <= 0.5
-        )
+        "total_benchmark_comparisons": n_comparisons,
+        "exact_matches_count": exact_matches,
+        "within_0_1_pp_count": within_0_1,
+        "within_0_5_pp_count": within_0_5,
+        "mean_absolute_discrepancy_pp": mean_abs_diff,
+        "max_absolute_discrepancy_pp": max_abs_diff,
+        "table1_max_ti_pct_discrepancy": max_ti_pct_diff,
+        "table1_max_tw_pct_discrepancy": max_tw_pct_diff,
+        "table2_max_ti_walk_pct_discrepancy": max_t2_ti_diff,
+        "table2_max_nonti_walk_pct_discrepancy": max_t2_nonti_diff,
+        "tolerance_threshold_pct": tolerance_threshold,
+        "all_benchmarks_within_tolerance": all_benchmarks_within_tolerance
     }
     
-    with open("data/processed/reproduction_summary_metrics.json", "w") as f:
+    metrics_path = "data/processed/reproduction_summary_metrics.json"
+    with open(metrics_path, "w") as f:
         json.dump(summary_metrics, f, indent=2)
+    print(f"Saved {metrics_path}.")
+
+    # Generate Cryptographic Integrity Manifest
+    def compute_sha256(filepath):
+        if not os.path.exists(filepath):
+            return None
+        h = hashlib.sha256()
+        with open(filepath, 'rb') as f:
+            while chunk := f.read(131072):
+                h.update(chunk)
+        return h.hexdigest().upper()
+
+    manifest_files = [
+        "25_0436.pdf",
+        "data/raw/adult22csv.zip",
+        "data/raw/adult22.csv",
+        "data/benchmarks/table1_benchmarks.csv",
+        "data/benchmarks/table2_benchmarks.csv",
+        "data/processed/table1_reproduced.csv",
+        "data/processed/table2_reproduced.csv",
+        "data/processed/table1_benchmark_audit.csv",
+        "data/processed/table2_benchmark_audit.csv",
+        "data/processed/reproduction_summary_metrics.json"
+    ]
+    manifest = {
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "algorithm": "SHA256",
+        "files": {}
+    }
+    for mf in manifest_files:
+        if os.path.exists(mf):
+            manifest["files"][mf] = {
+                "sha256": compute_sha256(mf),
+                "size_bytes": os.path.getsize(mf)
+            }
+    manifest_path = "data/processed/integrity_manifest.json"
+    with open(manifest_path, "w") as f:
+        json.dump(manifest, f, indent=2)
+    print(f"Saved {manifest_path} with {len(manifest['files'])} audited artifacts.")
         
     print("\n=== REPRODUCTION BENCHMARK SUMMARY ===")
     print(f"Sample Size: Reproduced {n_rep} vs Published {n_pub} (Diff: {n_rep - n_pub}, {summary_metrics['sample_size_relative_error_pct']}%)")
+    print(f"Comparisons Evaluated: {n_comparisons} (Exact matches: {exact_matches}, Within 0.1 pp: {within_0_1}, Within 0.5 pp: {within_0_5})")
+    print(f"Mean Absolute Discrepancy: {mean_abs_diff} pp | Max Absolute Discrepancy: {max_abs_diff} pp")
     print(f"Table 1 Max Prevalence Discrepancy: TI = {max_ti_pct_diff} pp, TW = {max_tw_pct_diff} pp")
     print(f"Table 2 Max Prevalence Discrepancy: TI Walk = {max_t2_ti_diff} pp, Non-TI Walk = {max_t2_nonti_diff} pp")
-    print(f"Audit Status: {summary_metrics['status']} (All within 0.5 percentage point tolerance)")
+    print(f"Audit Status: {summary_metrics['status']} (Threshold: <= {tolerance_threshold} pp)")
+
+    # Fail-fast enforcement guardrail
+    if not all_benchmarks_within_tolerance:
+        print(f"\nFATAL AUDIT FAILURE: Discrepancy {max_abs_diff} pp exceeds tolerance {tolerance_threshold} pp!", file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
     run_rate_calculations()
+

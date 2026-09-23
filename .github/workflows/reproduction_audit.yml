@@ -1,0 +1,53 @@
+name: Reproduction Pipeline & Audit Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r reproduction/requirements.txt
+
+      - name: Step 1 - Dynamic Benchmark Extraction from PDF
+        run: |
+          python script/01_extract_benchmarks.py
+
+      - name: Step 2 - Download and Parse Microdata
+        run: |
+          python script/02_download_or_parse_wonder.py
+
+      - name: Step 3 - Compute Rates, Benchmarks, and Integrity Manifest
+        run: |
+          python script/03_compute_rates.py
+
+      - name: Step 4 - Run Pairwise Inference and Multivariable Models
+        run: |
+          python script/04_run_trend_models.py
+
+      - name: Step 5 - Run Population Denominator Projections
+        run: |
+          python script/05_run_projections.py
+
+      - name: Step 6 - Generate Visualizations
+        run: |
+          python script/06_plot_figures.py
+
+      - name: Verify Audit Pass Certificate
+        run: |
+          python -c "import json, sys; m=json.load(open('data/processed/reproduction_summary_metrics.json')); assert m['status'] == 'PASS', 'Audit did not PASS'; assert m['all_benchmarks_within_tolerance'] is True, 'Tolerance exceeded'; print('CI Audit Passed:', m)"

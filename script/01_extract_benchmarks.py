@@ -1,110 +1,209 @@
 """01_extract_benchmarks.py
 
-Extracts published reference tables from Soto et al., PCD 2026;23:250436:
-- Table 1: Prevalence of US adults with the ability to walk reporting transportation insecurity and transportation walking.
-- Table 2: Prevalence of transportation walking among adults with and without transportation insecurity.
+Programmatically extracts published reference tables from the original CDC publication:
+Soto et al., PCD 2026;23:250436 (DOI: 10.5888/pcd23.250436) via '25_0436.pdf'.
+- Table 1: Prevalence of US adults with the ability to walk reporting transportation insecurity and transportation walking (pages 9-10).
+- Table 2: Prevalence of transportation walking among adults with and without transportation insecurity (pages 11-12).
 
-Saves structured reference benchmarks to data/benchmarks/.
+Parses PDF text streams dynamically using pypdf and regex, validates data schemas,
+asserts extraction integrity, and saves structured reference CSVs to data/benchmarks/.
 """
 
 import os
+import re
+import sys
+import pypdf
 import pandas as pd
 import numpy as np
 
-def extract_benchmarks():
-    os.makedirs("data/benchmarks", exist_ok=True)
-    
-    # Table 1 Benchmarks
-    t1_data = [
-        # Domain, Category, Overall_N, Overall_Pct, TI_N, TI_Pct, TI_CI_low, TI_CI_high, TW_N, TW_Pct, TW_CI_low, TW_CI_high
-        ("Overall", "Overall", 25889, 100.0, 1447, 5.6, 5.1, 6.2, 4073, 16.1, 15.4, 16.9),
-        ("Sex", "Female", 14094, 51.3, 833, 6.0, 5.4, 6.6, 2038, 15.0, 14.1, 16.0),
-        ("Sex", "Male", 11795, 48.7, 614, 5.3, 4.6, 5.9, 2035, 17.3, 16.3, 18.3),
-        ("Age", "18-24", 1637, 11.6, 145, 8.5, 7.1, 10.1, 473, 27.7, 25.3, 30.2),
-        ("Age", "25-34", 3754, 17.2, 230, 6.0, 5.0, 7.1, 833, 20.7, 19.1, 22.5),
-        ("Age", "35-44", 4005, 16.8, 227, 5.7, 4.9, 6.7, 687, 16.3, 14.9, 17.7),
-        ("Age", "45-64", 8278, 32.4, 463, 5.3, 4.6, 6.0, 1199, 13.3, 12.4, 14.3),
-        ("Age", ">=65", 8215, 22.0, 382, 4.3, 3.8, 4.9, 881, 10.4, 9.5, 11.4),
-        ("Race/Ethnicity", "Non-Hispanic AIAN", 346, 1.4, 47, 14.1, 9.0, 21.4, 62, 19.5, 14.6, 25.7),
-        ("Race/Ethnicity", "Non-Hispanic Asian", 1555, 6.0, 57, 3.2, 2.4, 4.4, 334, 21.5, 18.9, 24.3),
-        ("Race/Ethnicity", "Non-Hispanic Black", 2768, 11.3, 255, 9.1, 7.9, 10.4, 500, 18.6, 16.5, 20.9),
-        ("Race/Ethnicity", "Hispanic or Latino/a", 3642, 17.0, 245, 6.8, 5.8, 8.0, 610, 16.5, 15.0, 18.1),
-        ("Race/Ethnicity", "Non-Hispanic White", 17276, 62.9, 831, 4.7, 4.1, 5.4, 2489, 14.8, 13.9, 15.7),
-        ("Race/Ethnicity", "Non-Hispanic Other/Multiple", 302, 1.4, np.nan, np.nan, np.nan, np.nan, 78, 25.9, 20.5, 32.0),
-        ("Education", "Less than high school", 2152, 10.5, 219, 9.6, 8.2, 11.2, 352, 16.6, 14.8, 18.6),
-        ("Education", "High school or GED", 6494, 26.9, 385, 6.1, 5.3, 6.9, 780, 13.2, 12.1, 14.4),
-        ("Education", "Some college or associate degree", 7312, 29.6, 448, 5.9, 5.3, 6.7, 986, 14.8, 13.7, 15.9),
-        ("Education", "Bachelor degree or higher", 9931, 33.0, 395, 3.7, 3.1, 4.5, 1955, 19.6, 18.4, 20.9),
-        ("Disability", "With disabilities", 2416, 8.4, 346, 14.5, 12.6, 16.5, 260, 12.0, 10.4, 13.9),
-        ("Disability", "Without disabilities", 23473, 91.6, 1101, 4.8, 4.3, 5.4, 3813, 16.5, 15.7, 17.3),
-        ("Region", "Northeast", 4225, 17.3, 226, 4.9, 4.1, 5.9, 977, 25.1, 22.7, 27.8),
-        ("Region", "Midwest", 5705, 20.9, 330, 6.4, 4.9, 8.3, 886, 16.4, 14.7, 18.2),
-        ("Region", "South", 9478, 37.9, 522, 5.5, 4.9, 6.2, 989, 10.4, 9.4, 11.5),
-        ("Region", "West", 6481, 23.8, 369, 5.8, 4.9, 6.7, 1221, 18.5, 16.9, 20.2),
-        ("Urban-Rural", "Large central metropolitan", 7688, 30.7, 426, 5.7, 5.1, 6.5, 1871, 23.7, 22.0, 25.5),
-        ("Urban-Rural", "Large fringe metropolitan", 6043, 25.2, 267, 4.7, 4.1, 5.4, 820, 14.2, 13.0, 15.6),
-        ("Urban-Rural", "Medium and small metropolitan", 8087, 30.2, 516, 6.0, 4.9, 7.4, 997, 12.9, 11.8, 14.2),
-        ("Urban-Rural", "Nonmetropolitan", 4071, 14.0, 238, 6.2, 4.9, 7.6, 385, 9.7, 8.4, 11.3),
-        ("Income-Poverty Ratio", "<1.00", 2511, 9.4, 394, 15.6, 13.7, 17.6, 566, 24.0, 21.8, 26.3),
-        ("Income-Poverty Ratio", "1.00-1.99", 4469, 17.6, 392, 9.2, 8.2, 10.3, 663, 16.3, 14.8, 17.9),
-        ("Income-Poverty Ratio", "2.00-2.99", 4018, 16.1, 198, 5.0, 4.2, 6.0, 521, 13.2, 11.9, 14.6),
-        ("Income-Poverty Ratio", "3.00-3.99", 3432, 12.9, 134, 3.8, 3.0, 4.8, 418, 12.2, 10.8, 13.7),
-        ("Income-Poverty Ratio", ">=4.00", 11459, 44.1, 329, 2.9, 2.3, 3.5, 1905, 16.6, 15.6, 17.7),
+
+def clean_val(v):
+    """Sanitizes extracted text tokens into float values, mapping suppressed symbols to NaN."""
+    if v is None:
+        return np.nan
+    v = str(v).strip().replace(',', '')
+    if v in ['', '-', '--', '-j', '-i', '—j', '—i', '—', '–']:
+        return np.nan
+    try:
+        return float(v)
+    except Exception:
+        return np.nan
+
+
+def extract_benchmarks_from_pdf(pdf_path="25_0436.pdf"):
+    """Extracts Table 1 and Table 2 benchmarks programmatically from publication PDF."""
+    if not os.path.exists(pdf_path):
+        raise FileNotFoundError(f"Publication PDF not found at {pdf_path}")
+
+    print(f"Opening {pdf_path} for programmatic table extraction...")
+    reader = pypdf.PdfReader(pdf_path)
+    total_pages = len(reader.pages)
+    print(f"Total pages in publication: {total_pages}")
+    if total_pages < 12:
+        raise ValueError(f"Expected at least 12 pages in publication PDF, found {total_pages}")
+
+    # Standardized demographic domain & category sequence
+    categories_seq = [
+        ("Overall", "Overall"),
+        ("Sex", "Female"),
+        ("Sex", "Male"),
+        ("Age", "18-24"),
+        ("Age", "25-34"),
+        ("Age", "35-44"),
+        ("Age", "45-64"),
+        ("Age", ">=65"),
+        ("Race/Ethnicity", "Non-Hispanic AIAN"),
+        ("Race/Ethnicity", "Non-Hispanic Asian"),
+        ("Race/Ethnicity", "Non-Hispanic Black"),
+        ("Race/Ethnicity", "Hispanic or Latino/a"),
+        ("Race/Ethnicity", "Non-Hispanic White"),
+        ("Race/Ethnicity", "Non-Hispanic Other/Multiple"),
+        ("Education", "Less than high school"),
+        ("Education", "High school or GED"),
+        ("Education", "Some college or associate degree"),
+        ("Education", "Bachelor degree or higher"),
+        ("Disability", "With disabilities"),
+        ("Disability", "Without disabilities"),
+        ("Region", "Northeast"),
+        ("Region", "Midwest"),
+        ("Region", "South"),
+        ("Region", "West"),
+        ("Urban-Rural", "Large central metropolitan"),
+        ("Urban-Rural", "Large fringe metropolitan"),
+        ("Urban-Rural", "Medium and small metropolitan"),
+        ("Urban-Rural", "Nonmetropolitan"),
+        ("Income-Poverty Ratio", "<1.00"),
+        ("Income-Poverty Ratio", "1.00-1.99"),
+        ("Income-Poverty Ratio", "2.00-2.99"),
+        ("Income-Poverty Ratio", "3.00-3.99"),
+        ("Income-Poverty Ratio", ">=4.00"),
     ]
+
+    # -------------------------------------------------------------
+    # 1. TABLE 1 EXTRACTION (Pages 9 and 10 of PDF: 0-indexed 8, 9)
+    # -------------------------------------------------------------
+    print("Extracting Table 1 text stream from pages 9 and 10...")
+    p9_text = reader.pages[8].extract_text()
+    p10_text = reader.pages[9].extract_text()
+    t1_full = (p9_text + "\n" + p10_text).replace("–", "-").replace("—", "-").replace("≥", ">=")
+
+    # Table 1 row regex:
+    # <overall_n> [(overall_pct)] <ti_n> <ti_pct> [(low-high)] <tw_n> <tw_pct> (low-high)
+    t1_pattern = re.compile(
+        r'([\d,]+)(?:\s*\(([\d.]+)\))?\s+'                    # overall_n, [overall_pct]
+        r'([\d,]+|-j?|-i?)\s+'                               # ti_n or dash
+        r'([\d.]+(?:\.\d+)?|-j?|-i?)\s*'                     # ti_pct or dash
+        r'(?:\(([\d.]+)[-\s]+([\d.]+)\)[a-z,]*)?\s*'          # [ti_ci_low, ti_ci_high]
+        r'([\d,]+)\s+'                                        # tw_n
+        r'([\d.]+)\s*'                                        # tw_pct
+        r'\(([\d.]+)[-\s]+([\d.]+)\)'                         # tw_ci_low, tw_ci_high
+    )
+
+    extracted_t1_rows = []
+    for line in t1_full.splitlines():
+        line = line.strip()
+        m = t1_pattern.search(line)
+        if m:
+            g = m.groups()
+            extracted_t1_rows.append([
+                clean_val(g[0]), clean_val(g[1]),
+                clean_val(g[2]), clean_val(g[3]), clean_val(g[4]), clean_val(g[5]),
+                clean_val(g[6]), clean_val(g[7]), clean_val(g[8]), clean_val(g[9])
+            ])
+
+    if len(extracted_t1_rows) != 33:
+        raise ValueError(f"Table 1 extraction error: Expected 33 rows, extracted {len(extracted_t1_rows)}")
+
+    # Overall category percent is 100.0%
+    extracted_t1_rows[0][1] = 100.0
+
+    t1_data = []
+    for i, (dom, cat) in enumerate(categories_seq):
+        row = [dom, cat] + extracted_t1_rows[i]
+        t1_data.append(row)
+
     t1_cols = [
         "domain", "category", "overall_n", "overall_pct",
         "ti_n", "ti_pct", "ti_ci_low", "ti_ci_high",
         "tw_n", "tw_pct", "tw_ci_low", "tw_ci_high"
     ]
     df_t1 = pd.DataFrame(t1_data, columns=t1_cols)
-    df_t1.to_csv("data/benchmarks/table1_benchmarks.csv", index=False)
-    print("Saved data/benchmarks/table1_benchmarks.csv with", len(df_t1), "rows.")
 
-    # Table 2 Benchmarks
-    t2_data = [
-        # Domain, Category, TI_Walk_N, TI_Walk_Pct, TI_Walk_CI_low, TI_Walk_CI_high, NonTI_Walk_N, NonTI_Walk_Pct, NonTI_Walk_CI_low, NonTI_Walk_CI_high
-        ("Overall", "Overall", 417, 30.9, 27.9, 34.1, 3656, 15.3, 14.5, 16.1),
-        ("Sex", "Female", 247, 33.2, 29.4, 37.3, 1791, 13.9, 13.0, 14.8),
-        ("Sex", "Male", 170, 28.1, 23.8, 32.9, 1865, 16.7, 15.7, 17.7),
-        ("Age", "18-24", 72, 47.9, 39.0, 57.0, 401, 25.8, 23.4, 28.4),
-        ("Age", "25-34", 95, 40.7, 33.5, 48.4, 738, 19.5, 17.8, 21.2),
-        ("Age", "35-44", 67, 29.3, 23.2, 36.3, 620, 15.5, 14.1, 16.9),
-        ("Age", "45-64", 115, 23.4, 19.5, 27.8, 1084, 12.8, 11.8, 13.8),
-        ("Age", ">=65", 68, 17.5, 13.0, 23.1, 813, 10.1, 9.2, 11.1),
-        ("Race/Ethnicity", "Non-Hispanic AIAN", np.nan, np.nan, np.nan, np.nan, 46, 15.6, 11.5, 20.7),
-        ("Race/Ethnicity", "Non-Hispanic Asian", np.nan, np.nan, np.nan, np.nan, 311, 20.8, 18.2, 23.7),
-        ("Race/Ethnicity", "Non-Hispanic Black", 98, 42.6, 35.4, 50.2, 402, 16.2, 14.1, 18.6),
-        ("Race/Ethnicity", "Hispanic or Latino/a", 75, 32.0, 25.7, 39.0, 535, 15.4, 13.9, 17.0),
-        ("Race/Ethnicity", "Non-Hispanic White", 199, 24.5, 20.8, 28.5, 2290, 14.3, 13.4, 15.2),
-        ("Race/Ethnicity", "Non-Hispanic Other/Multiple", np.nan, np.nan, np.nan, np.nan, 72, 24.5, 19.2, 30.7),
-        ("Education", "Less than high school", 77, 38.8, 31.6, 46.5, 275, 14.3, 12.5, 16.2),
-        ("Education", "High school or GED", 112, 31.0, 25.8, 36.7, 668, 12.1, 10.9, 13.3),
-        ("Education", "Some college or associate degree", 119, 29.6, 24.8, 34.8, 867, 13.8, 12.8, 15.0),
-        ("Education", "Bachelor degree or higher", 109, 26.4, 21.7, 31.6, 1846, 19.3, 18.1, 20.6),
-        ("Disability", "With disabilities", 78, 25.3, 19.8, 31.6, 182, 9.8, 8.2, 11.6),
-        ("Disability", "Without disabilities", 339, 32.5, 28.8, 36.3, 3474, 15.7, 14.9, 16.5),
-        ("Region", "Northeast", 75, 34.9, 27.7, 42.8, 902, 24.6, 22.1, 27.3),
-        ("Region", "Midwest", 92, 30.9, 24.3, 38.4, 794, 15.4, 13.8, 17.2),
-        ("Region", "South", 117, 23.6, 19.3, 28.5, 872, 9.6, 8.7, 10.7),
-        ("Region", "West", 133, 39.6, 34.0, 45.4, 1088, 17.2, 15.6, 18.9),
-        ("Urban-Rural", "Large central metropolitan", 158, 36.0, 31.0, 41.3, 1713, 23.0, 21.2, 24.9),
-        ("Urban-Rural", "Large fringe metropolitan", 73, 28.8, 22.7, 35.8, 747, 13.5, 12.3, 14.8),
-        ("Urban-Rural", "Medium and small metropolitan", 136, 30.5, 25.0, 36.7, 861, 11.8, 10.7, 13.0),
-        ("Urban-Rural", "Nonmetropolitan", 50, 24.1, 17.1, 32.9, 335, 8.8, 7.6, 10.2),
-        ("Income-Poverty Ratio", "<1.00", 142, 39.8, 34.2, 45.7, 424, 21.1, 18.8, 23.5),
-        ("Income-Poverty Ratio", "1.00-1.99", 111, 33.7, 28.3, 39.5, 552, 14.6, 13.1, 16.1),
-        ("Income-Poverty Ratio", "2.00-2.99", 57, 29.4, 22.4, 37.5, 464, 12.3, 11.1, 13.7),
-        ("Income-Poverty Ratio", "3.00-3.99", 33, 21.5, 13.7, 32.0, 385, 11.8, 10.4, 13.4),
-        ("Income-Poverty Ratio", ">=4.00", 74, 21.7, 16.8, 27.6, 1831, 16.5, 15.4, 17.5),
-    ]
+    # -------------------------------------------------------------
+    # 2. TABLE 2 EXTRACTION (Pages 11 and 12 of PDF: 0-indexed 10, 11)
+    # -------------------------------------------------------------
+    print("Extracting Table 2 text stream from pages 11 and 12...")
+    p11_text = reader.pages[10].extract_text()
+    p12_text = reader.pages[11].extract_text()
+    t2_full = (p11_text + "\n" + p12_text).replace("–", "-").replace("—", "-").replace("≥", ">=")
+
+    # Table 2 row regex:
+    # [ti_walk_n] [ti_walk_pct] [(ti_ci_low-ti_ci_high)] nonti_walk_n nonti_walk_pct (nonti_ci_low-nonti_ci_high)
+    t2_pattern = re.compile(
+        r'(?:([\d,]+)\s+([\d.]+)\s*\(([\d.]+)[-\s]+([\d.]+)\)[a-z,]*|(-i?|-j?)\s+(-i?|-j?))\s+' # TI walk
+        r'([\d,]+)\s+([\d.]+)\s*\(([\d.]+)[-\s]+([\d.]+)\)'                                       # Non-TI walk
+    )
+
+    extracted_t2_rows = []
+    for line in t2_full.splitlines():
+        line = line.strip()
+        m = t2_pattern.search(line)
+        if m:
+            g = m.groups()
+            if g[4] is not None:  # Suppressed estimate (—i)
+                ti_n, ti_pct, ti_low, ti_high = np.nan, np.nan, np.nan, np.nan
+            else:
+                ti_n, ti_pct, ti_low, ti_high = clean_val(g[0]), clean_val(g[1]), clean_val(g[2]), clean_val(g[3])
+            non_n, non_pct, non_low, non_high = clean_val(g[6]), clean_val(g[7]), clean_val(g[8]), clean_val(g[9])
+            extracted_t2_rows.append([ti_n, ti_pct, ti_low, ti_high, non_n, non_pct, non_low, non_high])
+
+    if len(extracted_t2_rows) != 33:
+        raise ValueError(f"Table 2 extraction error: Expected 33 rows, extracted {len(extracted_t2_rows)}")
+
+    t2_data = []
+    for i, (dom, cat) in enumerate(categories_seq):
+        row = [dom, cat] + extracted_t2_rows[i]
+        t2_data.append(row)
+
     t2_cols = [
         "domain", "category",
         "ti_walk_n", "ti_walk_pct", "ti_walk_ci_low", "ti_walk_ci_high",
         "nonti_walk_n", "nonti_walk_pct", "nonti_walk_ci_low", "nonti_walk_ci_high"
     ]
     df_t2 = pd.DataFrame(t2_data, columns=t2_cols)
-    df_t2.to_csv("data/benchmarks/table2_benchmarks.csv", index=False)
-    print("Saved data/benchmarks/table2_benchmarks.csv with", len(df_t2), "rows.")
+
+    return df_t1, df_t2
+
+
+def extract_benchmarks():
+    """Extracts and saves structured reference benchmarks directly from 25_0436.pdf."""
+    os.makedirs("data/benchmarks", exist_ok=True)
+    pdf_path = "25_0436.pdf"
+
+    df_t1, df_t2 = extract_benchmarks_from_pdf(pdf_path)
+
+    # Save outputs
+    out_t1 = "data/benchmarks/table1_benchmarks.csv"
+    out_t2 = "data/benchmarks/table2_benchmarks.csv"
+
+    df_t1.to_csv(out_t1, index=False)
+    print(f"Saved {out_t1} ({len(df_t1)} rows extracted from pages 9-10).")
+
+    df_t2.to_csv(out_t2, index=False)
+    print(f"Saved {out_t2} ({len(df_t2)} rows extracted from pages 11-12).")
+
+    # Assert integrity checks
+    assert df_t1.loc[df_t1["category"] == "Overall", "overall_n"].values[0] == 25889
+    assert df_t1.loc[df_t1["category"] == "Overall", "ti_pct"].values[0] == 5.6
+    assert df_t1.loc[df_t1["category"] == "Overall", "tw_pct"].values[0] == 16.1
+    assert df_t2.loc[df_t2["category"] == "Overall", "ti_walk_pct"].values[0] == 30.9
+    assert df_t2.loc[df_t2["category"] == "Overall", "nonti_walk_pct"].values[0] == 15.3
+    print("Verification assertions PASSED: All benchmark anchor values match publication exactly.")
+
 
 if __name__ == "__main__":
-    extract_benchmarks()
+    try:
+        extract_benchmarks()
+    except Exception as e:
+        print(f"ERROR in benchmark extraction: {e}", file=sys.stderr)
+        sys.exit(1)
