@@ -54,10 +54,12 @@ Beyond verifying numerical accuracy, this audit identifies critical structural n
 .
 ├── 25_0436.pdf                     # Target publication PDF
 ├── README.md                       # Quickstart and overview
-├── draft_article.md                # Formal academic reproduction manuscript
-├── substack_article.md             # Accessible, business-oriented analytical critique
-├── REPRODUCIBILITY_AUDIT_2026-09-23.md # Formal dated audit checklist
+├── deliverables/                   # Manuscripts and audit deliverables
+│   ├── draft_article.md            # Formal academic reproduction manuscript
+│   ├── substack_article.md         # Accessible, business-oriented analytical critique
+│   └── REPRODUCIBILITY_AUDIT_2026-09-23.md # Formal dated audit checklist
 ├── data/
+
 │   ├── raw/                        # CDC raw data (adult22.csv, adult22csv.zip, codebooks)
 │   ├── benchmarks/                 # Published Table 1 & Table 2 reference CSVs
 │   └── processed/                  # Harmonized analytic data & audit discrepancies

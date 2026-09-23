@@ -30,3 +30,12 @@ data/raw/Adult-codebook.pdf
 # Scratch exploration scripts
 scratch/
 
+# Integrity manifests & checksums
+*integrity_manifest*.json
+*.sha256
+
+# Root markdown exclusion:
+# The ONLY markdown file permitted at the repository root is README.md.
+# All other root-level markdown files are excluded unless explicitly opted into.
+/*.md
+!/README.md

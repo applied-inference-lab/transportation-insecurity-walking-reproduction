@@ -27,8 +27,9 @@
 - Programmatic comparison conducted via automated join:
   - `data/processed/table1_benchmark_audit.csv`
   - `data/processed/table2_benchmark_audit.csv` [PASS]
-- Discrepancy artifacts recorded: maximum observed prevalence discrepancy across all 66 proportion comparisons was $\le 0.1$ percentage points. [PASS]
-- Explicit tolerance threshold declared: $\le 0.5$ percentage points for prevalence rates; all comparisons passed. [PASS]
+- Discrepancy artifacts recorded: maximum observed prevalence discrepancy was 0.10 pp for Table 1 and 0.20 pp for Table 2; all 128 comparison cells within pre-registered tolerance ($\le 0.50$ percentage points). [PASS]
+- Explicit tolerance threshold declared: $\le 0.50$ percentage points for prevalence rates; all comparisons passed. [PASS]
+
 
 ### Section 2C: Reproduction Artifacts
 - All primary calculations exported as standalone, versioned data artifacts:
